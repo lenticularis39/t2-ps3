@@ -1,0 +1,156 @@
+Index: architecture/powerpc64/package/linux/0666-ps3fb-vram.patch
+===================================================================
+--- architecture/powerpc64/package/linux/0666-ps3fb-vram.patch	(revision 51618)
++++ architecture/powerpc64/package/linux/0666-ps3fb-vram.patch	(working copy)
+@@ -77,14 +77,15 @@
+  
+  out:
+  	return error;
+-@@ -958,21 +936,10 @@
++@@ -957,21 +957,9 @@
++ 		}
+  		par->mode_id = par->new_mode_id;
+  	}
+- 
++-
+ -	/* Clear XDR frame buffer memory */
+--	memset((void __force *)info->screen_base, 0, info->fix.smem_len);
++ 	memset((void __force *)info->screen_base, 0, info->fix.smem_len);
+ -
+- 	/* Clear DDR frame buffer memory */
++-	/* Clear DDR frame buffer memory */
+ -	lines = vmode->yres * par->num_frames;
+ -	if (par->full_offset)
+ -		lines++;
+@@ -95,12 +96,11 @@
+ -				 ddr_line_length, ddr_line_length);
+ -		lines -= l;
+ -	}
+-+	memset((void __force *)info->screen_base, 0, info->fix.smem_len);
+- 
+++ 
+ +	ps3fb_sync_image(info->device, 0);
+  
+- 	/* test cursor init here */
+- 	int status = lv1_gpu_context_attribute(ps3fb.context_handle, 0x10b, 0/*head*/, 1, 0, 0); /* init */
++ 	return 0;
++ }
+ @@ -1275,25 +1242,6 @@
+  	return retval;
+  }
+Index: package/base/sudo/sudo.desc
+===================================================================
+--- package/base/sudo/sudo.desc	(revision 51618)
++++ package/base/sudo/sudo.desc	(working copy)
+@@ -26,6 +26,7 @@
+ [M] The T2 Project <t2@t2-project.org>
+ 
+ [C] extra/shell
++[F] CROSS
+ 
+ [L] BSD
+ [S] Stable
+Index: package/develop/cmake/cmake.conf
+===================================================================
+--- package/develop/cmake/cmake.conf	(revision 51618)
++++ package/develop/cmake/cmake.conf	(working copy)
+@@ -12,10 +12,5 @@
+ # GNU General Public License can be found in the file COPYING.
+ # --- T2-COPYRIGHT-NOTE-END ---
+ 
+-# oehm - the configure script is rather strange - we can not detect the options
+-cleanconfopt=0
+-
+-# and strange config options it has, datadir and docdir are relative to $prefix
+-confopt="--prefix=$root/$prefix --datadir=/share/$pkg --docdir=/doc/$pkg"
+-
+-[ "$SDECFG_PARALLEL_MAX" ] && var_append confopt ' ' "--parallel=$SDECFG_PARALLEL_MAX"
++runconf=0
++runcmake=1
+Index: package/develop/cmake/cmake.desc
+===================================================================
+--- package/develop/cmake/cmake.desc	(revision 51618)
++++ package/develop/cmake/cmake.desc	(working copy)
+@@ -28,6 +28,7 @@
+ [M] Rene Rebe <rene@t2-project.org>
+ 
+ [C] base/development
++[F] CROSS
+ 
+ [L] BSD
+ [S] Stable
+Index: package/develop/distcc/distcc.conf
+===================================================================
+--- package/develop/distcc/distcc.conf	(nonexistent)
++++ package/develop/distcc/distcc.conf	(working copy)
+@@ -0,0 +1,26 @@
++prepare() {
++	local gcc_name=$(eval basename "$builddir/archdir/gcc*")
++	gcc_name=${gcc_name%.*}
++	gcc_name=${gcc_name%.*}
++
++	# Extract libiberty from GCC
++	echo "Building libiberty"
++	local oldpwd="$PWD"
++	cd "$builddir"
++	tar -xf "$builddir/archdir/$gcc_name.tar.zst" "$gcc_name/include" "$gcc_name/libiberty" "$gcc_name/install-sh" \
++		"$gcc_name/config.sub"
++	
++	# Build libiberty
++	cd "$gcc_name/libiberty"
++	eval ./configure $confopt
++	eval $MAKE $makeopt
++        mkdir "$builddir/libiberty"
++        cp "$builddir/$gcc_name/libiberty/libiberty.a" "$builddir/libiberty/"
++
++	# Prepare the source
++	cd "$oldpwd"
++	./autogen.sh
++}
++
++hook_add preconf 5 prepare
++var_append extraconfopt ' ' "LDFLAGS=-L$builddir/libiberty/"
+Index: package/develop/distcc/distcc.desc
+===================================================================
+--- package/develop/distcc/distcc.desc	(revision 51618)
++++ package/develop/distcc/distcc.desc	(working copy)
+@@ -34,7 +34,8 @@
+ 
+ [L] GPL
+ [S] Stable
+-[V] 2.18.3
++[V] 3.3.5
+ [P] X 01---5---9 105.400
+ 
+-[D] 1057293809 distcc-2.18.3.tar.bz2 http://distcc.samba.org/ftp/distcc/
++[D] ea9e258b04cdfa48afcaa9759938027059e41f00788bef9ea4826c9d v3.3.5.tar.gz https://github.com/distcc/distcc/archive/
++[D] bb785dbe2464c9b6eb4c80123aa99964ef12236b01f652640eb7ea28 gcc-10.2.0.tar.xz http://ftp.gnu.org/gnu/gcc/gcc-10.2.0/
+Index: package/develop/libffi/float128-ppc.patch
+===================================================================
+--- package/develop/libffi/float128-ppc.patch	(nonexistent)
++++ package/develop/libffi/float128-ppc.patch	(working copy)
+@@ -0,0 +1,14 @@
++--- x/src/powerpc/ffi_linux64.c.vanilla	2021-02-05 04:42:56.647467207 +0100
+++++ x/src/powerpc/ffi_linux64.c	2021-02-05 04:40:43.641139323 +0100
++@@ -547,9 +547,9 @@
++               if (next_arg.ul == gpr_end.ul)
++                 next_arg.ul = rest.ul;
++               if (vecarg_count < NUM_VEC_ARG_REGISTERS64 && i < nfixedargs)
++-                *vec_base.f128++ = **p_argv.f128;
+++                 memcpy(vec_base.f128++, *p_argv.f128, sizeof(float128));
++               else
++-                *next_arg.f128 = **p_argv.f128;
+++                 memcpy(next_arg.f128, *p_argv.f128, sizeof(float128));
++               if (++next_arg.f128 == gpr_end.f128)
++                 next_arg.f128 = rest.f128;
++               vecarg_count++;
+Index: package/textproc/asciidoc/asciidoc.desc
+===================================================================
+--- package/textproc/asciidoc/asciidoc.desc	(revision 51618)
++++ package/textproc/asciidoc/asciidoc.desc	(working copy)
+@@ -36,4 +36,4 @@
+ [P] X -----5---9 200.000
+ 
+ [CV-FLAGS] NO-PREFIX
+-[D] e9c92b44bd764c92ce29028548e6bbf13ef9411d8a707a3d2165b8d3 asciidoc-py3-9.0.5.tar.gz https://github.com/asciidoc/asciidoc-py3/archive/9.0.5/
++[D] 0 asciidoc-py3-9.0.5.tar.gz https://github.com/asciidoc/asciidoc-py3/archive/9.0.5/

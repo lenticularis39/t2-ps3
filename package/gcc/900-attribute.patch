@@ -1,0 +1,12 @@
+--- gcc-10.2.0/libgcc/unwind-dw2.c.vanilla	2021-02-05 13:51:15.253875714 +0100
++++ gcc-10.2.0/libgcc/unwind-dw2.c	2021-02-05 13:52:41.420792449 +0100
+@@ -1618,8 +1618,7 @@
+   context->ra = __builtin_extract_return_addr (outer_ra);
+ }
+ 
+-static void _Unwind_DebugHook (void *, void *)
+-  __attribute__ ((__noinline__, __used__, __noclone__));
++static void _Unwind_DebugHook (void *, void *);
+ 
+ /* This function is called during unwinding.  It is intended as a hook
+    for a debugger to intercept exceptions.  CFA is the CFA of the
