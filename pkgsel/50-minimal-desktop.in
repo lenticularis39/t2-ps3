@@ -21,11 +21,20 @@ include target/ps3/pkgsel/40-minimal-xorg.in
 # some required stuff
 X libusb
 X libidl
+X libev
 X cmake
 X dbus
 X libtasn1
 X libunistring
 X gnutls
+X startup-notification
+X xkbcommon
+X xcb-util-image
+X xcb-util-renderutils
+X xcb-util-wm
+X xcb-util-xrm
+X xcb-util-cursor
+X yajl
 
 # fonts
 X bitstream-vera-fonts
@@ -37,10 +46,15 @@ X ghostscript-fonts
 X cups
 X gutenprint
 
-# enlightement
-X lua
-X efl
-X e
+# window managers
+X windowmaker
+X i3
+
+# libraries
+X cairo
+
+# terminals
+X rxvt
 
 # multimedia
 X alsa-utils

@@ -125,6 +125,18 @@ Index: package/develop/distcc/distcc.desc
 -[D] 1057293809 distcc-2.18.3.tar.bz2 http://distcc.samba.org/ftp/distcc/
 +[D] ea9e258b04cdfa48afcaa9759938027059e41f00788bef9ea4826c9d v3.3.5.tar.gz https://github.com/distcc/distcc/archive/
 +[D] bb785dbe2464c9b6eb4c80123aa99964ef12236b01f652640eb7ea28 gcc-10.2.0.tar.xz http://ftp.gnu.org/gnu/gcc/gcc-10.2.0/
+Index: package/develop/libev/libev.desc
+===================================================================
+--- package/develop/libev/libev.desc	(revision 51618)
++++ package/develop/libev/libev.desc	(working copy)
+@@ -31,6 +31,7 @@
+ [M] Rene Rebe <rene@t2-project.org>
+ 
+ [C] extra/development
++[F] CROSS
+ 
+ [L] BSD
+ [S] Stable
 Index: package/develop/libffi/float128-ppc.patch
 ===================================================================
 --- package/develop/libffi/float128-ppc.patch	(nonexistent)
@@ -144,6 +156,18 @@ Index: package/develop/libffi/float128-ppc.patch
 +               if (++next_arg.f128 == gpr_end.f128)
 +                 next_arg.f128 = rest.f128;
 +               vecarg_count++;
+Index: package/qt/qt5/qt5.desc
+===================================================================
+--- package/qt/qt5/qt5.desc	(revision 51618)
++++ package/qt/qt5/qt5.desc	(working copy)
+@@ -26,6 +26,7 @@
+ [M] Rene Rebe <rene@t2-project.org>
+ 
+ [C] extra/development
++[F] CROSS
+ 
+ [L] LGPL
+ [S] Stable
 Index: package/textproc/asciidoc/asciidoc.desc
 ===================================================================
 --- package/textproc/asciidoc/asciidoc.desc	(revision 51618)
@@ -154,3 +178,52 @@ Index: package/textproc/asciidoc/asciidoc.desc
  [CV-FLAGS] NO-PREFIX
 -[D] e9c92b44bd764c92ce29028548e6bbf13ef9411d8a707a3d2165b8d3 asciidoc-py3-9.0.5.tar.gz https://github.com/asciidoc/asciidoc-py3/archive/9.0.5/
 +[D] 0 asciidoc-py3-9.0.5.tar.gz https://github.com/asciidoc/asciidoc-py3/archive/9.0.5/
+Index: package/textproc/libxslt/libxslt.desc
+===================================================================
+--- package/textproc/libxslt/libxslt.desc	(revision 51618)
++++ package/textproc/libxslt/libxslt.desc	(working copy)
+@@ -33,7 +33,7 @@
+ [L] LGPL
+ [S] Stable
+ [V] 1.1.34
+-[P] X ?----5---9 112.350
++[P] X 0----5---9 111.350
+ 
+ [CV-FLAGS] ODD-STABLE
+ [D] 9f706f93173799a926d19a516e2892a588a1d7ca13ac3aaf895e85bc libxslt-1.1.34.tar.gz ftp://xmlsoft.org/libxslt/
+Index: package/x11/i3/i3.desc
+===================================================================
+--- package/x11/i3/i3.desc	(revision 51618)
++++ package/x11/i3/i3.desc	(working copy)
+@@ -22,6 +22,7 @@
+ [M] The T2 Project <t2@t2-project.org>
+ 
+ [C] extra/windowmanager
++[F] CROSS
+ 
+ [L] BSD
+ [S] Stable
+Index: package/x11/windowmaker/windowmaker.conf
+===================================================================
+--- package/x11/windowmaker/windowmaker.conf	(revision 51618)
++++ package/x11/windowmaker/windowmaker.conf	(working copy)
+@@ -18,3 +18,6 @@
+ confopt="$confopt --enable-gnome --enable-kde"
+ 
+ hook_add postinstall 3 "register_wm windowmaker 'Window Maker' /$prefix/bin/wmaker"
++
++export LDFLAGS="$LDFLAGS -L$root/usr/X11/lib64"
++export CPPFLAGS="$CPPFLAGS -I$root/usr/X11/include"
+Index: package/xorg/xcb-util-cursor/xcb-util-cursor.desc
+===================================================================
+--- package/xorg/xcb-util-cursor/xcb-util-cursor.desc	(revision 51618)
++++ package/xorg/xcb-util-cursor/xcb-util-cursor.desc	(working copy)
+@@ -32,7 +32,7 @@
+ [L] OpenSource
+ [S] Beta
+ [V] 0.1.3
+-[P] X -----5---9 112.410
++[P] X -----5---9 113.410
+ 
+ [O] . package/*/*/modular-x-conf.in
+ 
